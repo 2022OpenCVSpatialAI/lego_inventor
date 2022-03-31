@@ -1,0 +1,109 @@
+<?xml version="1.0" ?>
+<robot name="rrbot" xmlns:xacro="http://ros.org/wiki/xacro">
+  <material name="black">
+    <color rgba="0.0 0.0 0.0 1.0"/>
+  </material>
+  <material name="blue">
+    <color rgba="0.0 0.1 0.28515625 1.0"/>
+  </material>
+  <material name="green">
+    <color rgba="0.0 0.8 0.0 1.0"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+
+  <link name="world"/>
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <!--<box size="0.1 0.15 0.03"/>-->
+         <mesh filename="package://lego_inventor/robot_description/meshes/pinza_blender.dae" scale="0.001 0.001 0.001"/>
+
+      </geometry>
+      <origin xyz="0 0 0.015" rpy="1.57 0 0"/>
+      <!--<material name="green"/>-->
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.1 0.15 0.03"/>
+      </geometry>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+    </collision>
+  </link>
+
+  <joint name="world_to_base_link" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.0" rpy="0 0 0"/>
+  </joint>
+
+<xacro:macro name="link" params="index parent material link_size:='${[0,0,0]}' link_translation:='0 0 0' joint_translation:='${[0.0,0.0,0.0]}' link_orientation:='0 0 0' joint_orientation:='0 0 0' axis:='0 0 1'">
+    
+    <!--<xacro:if value="${trans_z == 10000}">
+      <xacro:property name="trans_z" value="${len/2}"/>
+      <xacro:property name="joint_z" value="${len/2}"/>
+    </xacro:if>-->
+    <link name="link_${index}">
+        <visual>
+            <geometry>
+                <box size="${link_size[0]} ${link_size[1]} ${link_size[2]}"/>
+            </geometry>
+            <origin xyz="${link_translation}" rpy="${link_orientation}"/>
+            <material name="${material}"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="${link_size[0]} ${link_size[1]} ${link_size[2]}"/>
+            </geometry>
+            <origin xyz="${link_translation}" rpy="${link_orientation}"/>
+        </collision>
+        <!--<xacro:default_inertial mass="10"/>-->
+    </link>
+
+    <joint name="joint_${index}" type="revolute">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <axis xyz="${axis}"/>
+      <limit lower="-3.1416" upper="3.1416" effort="10" velocity="3"/>
+        <parent link="${parent}"/>
+        <child link="link_${index}"/>
+      <origin xyz="${joint_translation[0]} ${joint_translation[1]} ${joint_translation[2]}" rpy="${joint_orientation}"/>
+    </joint>
+</xacro:macro>
+<xacro:link index="1" parent="base_link" material="green" link_size="${[0.07,0.1,0.16]}" joint_translation='${[0,0,0.03]}' link_translation='0 0 0.08'/>
+<xacro:link index="2" parent="link_1" material="grey" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0,0,0.16]}'  joint_orientation="-${pi/2} 0 0" link_translation='0.08 0 0.0'/>
+<xacro:link index="3" parent="link_2" material="blue" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0.16,0,0]}'  joint_orientation="0 0 0" link_translation='0.08 0 0.0'/>
+<xacro:link index="4" parent="link_3" material="green" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0.16,0,0]}'  joint_orientation="0 0 0" link_translation='0.08 0 0.0' />
+<!--<xacro:link index="2" parent="link_1" len="0.105" trans_z="0.16"/>
+<xacro:link index="3" parent="link_2" len="1" joint_z="0.5" trans_z="0.5" rotation_r="1"/>
+<xacro:link index="4" parent="link_3" len="1"  />-->
+
+
+
+
+
+<!--
+  <link name="link_0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="1.1" radius="0.2"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="1.1" radius="0.2"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="base_link_to_link_0" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="3"/>
+    <parent link="base_link"/>
+    <child link="link_0"/>
+    <origin xyz="0 0 0.8" rpy="0 0 0"/>
+  </joint>
+-->
+ 
+</robot>

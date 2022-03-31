@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<launch>
+<!--<include file="$(find gazebo_ros)/launch/empty_world.launch"/>-->
+    <!-- Metemos la "robot_description" en el parameter server -->
+        <param name="robot_description" command="$(find xacro)/xacro $(find lego_inventor)/robot_description/robot.urdf.xacro" />
+        <rosparam file="$(find lego_inventor)/config/head_controller.yaml" command="load"/>
+    <!-- Iniciamos robot state publisher -->
+        <!--<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>-->
+    <!--Iniciamos joint state publisher, iniciamos el GUI-->
+        <!--<node name="joint_state_publisher_gui" pkg="joint_state_publisher" type="joint_state_publisher">
+            
+        </node>
+        
+ <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+       output="screen"  args="position_controllers/JointTrajectoryController"/>-->
+
+ <!-- convert joint states to TF transforms for rviz, etc -->
+<!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+       respawn="false" output="screen">
+   
+ </node>-->
+   <!-- launch our hardware interface -->
+
+    <node pkg="lego_inventor"
+          type="rrbot_control"
+          name="rrbot_control" output="screen" clear_params="true"
+          required="true"/>
+
+
+  <!-- load the controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen"  args="joint_state_controller
+                      legoinventor_position_controller
+                      "/>
+                      <!--joint2_position_controller
+                      joint3_position_controller-->
+
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" output="screen">
+    
+  </node>
+
+
+  <!--<node name="joint_state_publisher_gui" pkg="joint_state_publisher" type="joint_state_publisher">
+            
+        </node>-->
+
+    <!-- metemos el robot en Rviz, iniciamos Rviz   -->
+     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find lego_inventor)/rviz.rviz"/>
+    
+
+</launch>

@@ -1,0 +1,256 @@
+#! /usr/bin/env python3
+#import roslib
+import time
+
+from std_msgs.msg import String,Int16,Float32, Float32MultiArray
+from sensor_msgs.msg import CompressedImage, Image, JointState
+from std_srvs.srv import Trigger, TriggerResponse
+import os
+from cv_bridge import CvBridge, CvBridgeError
+import tf
+
+import actionlib
+from control_msgs.msg import *
+from trajectory_msgs.msg import *
+from math import pi
+
+import rospy, sys, numpy as np
+from copy import deepcopy
+import geometry_msgs.msg
+import moveit_msgs.msg
+
+from std_msgs.msg import Header
+from trajectory_msgs.msg import JointTrajectory
+from trajectory_msgs.msg import JointTrajectoryPoint
+
+
+class SetPose:
+	def __init__(self,namespace):
+		self.JOINT_NAMES = ['joint_1', 'joint_2','joint_3','joint_4' ]
+		self.authorized_names=['Javier']
+		self.last_auth=""
+		self.gripper=0
+		self.client = actionlib.SimpleActionClient('/legoinventor_position_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+		self.pose_index=0
+		self.min_security_user_distance=0.5 # meters
+		self.security_stop=False
+		self.security_stop_distance=False
+		self.security_stop_auth=False
+		self.current_image="happy"
+		self.current_sound="initialize"
+		self.delta_time=2
+		print ("Waiting for server...")
+		self.client.wait_for_server()
+		print ("Connected to server")
+		self.pathFilePoses=rospy.get_param('~pathFilePoses',"/home/miguel/tesis/openCVspatialAI/lego_ws/src/lego_inventor/config/")
+		self.read_capture_state=False
+		self.secuencia=""
+		self.namespace=namespace
+		rospy.Subscriber("/start_sequence", String, self.cb_new_sequence)
+		rospy.Subscriber("/start_trajectory", String, self.cb_new_trajectory)
+		rospy.Subscriber("/simple_move", String, self.cb_new_move)
+		rospy.Subscriber("/oak/user/dist", Float32, self.cb_user_distance)
+		rospy.Subscriber("/oak/user/name", String, self.cb_user_auth)
+		rospy.Subscriber("/oak/user/authorize_name", String, self.cb_user_add_name)
+		rospy.Subscriber("/oak/user/remove_name", String, self.cb_user_remove_name)
+		self.move_end= rospy.Publisher('/move_end', String, queue_size=1)
+		self.lego_sound= rospy.Publisher('/lego/sound', String, queue_size=1)
+		self.lego_image= rospy.Publisher('/lego/image', String, queue_size=1)
+		#self.setRegister= rospy.Publisher('/set_fanuc_register', String, queue_size=100)
+		#self.setRegisterf= rospy.Publisher('/set_fanuc_register_f', String, queue_size=100)
+		#rospy.Subscriber("/sensorProcesing/image", Image, self.cb_new_image)
+		rospy.Subscriber("/set_delta", Float32, self.cb_set_delta)
+		rospy.Subscriber("/security_stop", String, self.cb_security_stop)
+		rospy.Subscriber("/security_stop_recovery", String, self.cb_security_stop_recovery)
+		#rospy.Subscriber("/oak/user/hand_screen_pos", Float32MultiArray, self.cb_hand_screen_pos, queue_size=1)
+		#rospy.Subscriber("/oak/user/gesture", String, self.cb_hand_gesture, queue_size=1)
+		#self.setRegister = rospy.ServiceProxy('/set_fanuc_register', FanucSetRegister)
+		#self.setRegisterf = rospy.ServiceProxy('/set_fanuc_register_f', FanucSetRegister)
+
+		#new_fusion_init= rospy.Publisher('/new_fusion_init', String, queue_size=1)
+		#rospy.Subscriber(self.sensorContentTopic, Image, self.cb_new_image)
+	def cb_new_move(self,data):
+		#rospy.loginfo("cb_new_move - I heard %s",data)
+		poseFinal=[]
+		for pose in data.data.split():
+			poseFinal.append(float(pose))
+		#print(poseFinal)
+		global joints_pos
+		g = FollowJointTrajectoryGoal()
+		g.trajectory = JointTrajectory()
+		g.trajectory.joint_names = self.JOINT_NAMES
+		try:
+		    joint_states = rospy.wait_for_message("joint_states", JointState)
+		    joints_pos = joint_states.position
+		    g.trajectory.points = [
+		        #JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
+		        JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(self.delta_time))]
+		    self.client.send_goal(g)
+		    self.client.wait_for_result(rospy.Duration(self.delta_time+1))
+		    self.move_end.publish(str(self.pose_index))
+		    self.pose_index=self.pose_index+1
+		except KeyboardInterrupt:
+		    client.cancel_goal()
+		    raise
+		except:
+		    raise
+	def cb_security_stop(self,data):
+		rospy.loginfo("security stopping %s",data.data)
+		self.security_stop_enable()
+	def security_stop_enable(self):
+		rospy.loginfo("security stop ")
+		self.security_stop=True
+		self.send_image("no")
+		self.send_sound("shut down")
+		self.delta_time=0.0	
+	def cb_security_stop_recovery(self,data):
+		rospy.loginfo("recovering from security stop %s",data.data)
+		self.security_stop_recovery()
+	def security_stop_recovery(self):
+		if self.security_stop_distance:
+			rospy.loginfo("cannot recover from security stop due to user distance stop")
+		elif self.security_stop_auth:
+			rospy.loginfo("cannot recover from security stop due to user not authorized")
+		else:
+			rospy.loginfo("recovery from security stop sucessful")
+			self.security_stop=False
+			self.send_image(self.current_image)
+			self.send_sound("yipee")
+			self.delta_time=1.0
+
+			
+	def send_image(self,image):
+		image_msg=String()
+		image_msg.data=image
+		self.lego_image.publish(image_msg)
+	def send_sound(self,sound):
+		sound_msg=String()
+		sound_msg.data=sound
+		self.lego_sound.publish(sound_msg)
+	def cb_user_distance(self,data):
+		distance=data.data
+		if distance>self.min_security_user_distance:
+			if self.security_stop_distance:
+				rospy.loginfo("Recovering from distance security stop")
+				self.security_stop_distance=False
+				self.security_stop_recovery()
+			if distance>2*self.min_security_user_distance:
+				self.delta_time=1
+			elif distance>self.min_security_user_distance:
+				self.delta_time=1/pow(distance,2)
+		else:
+			if not self.security_stop_distance:
+				rospy.loginfo("Too close. Entering in security stop")
+				self.security_stop_distance=True
+				self.security_stop_enable()
+	def user_auth(self,name):
+		if self.last_auth==name:
+			pass 
+		else:
+			self.last_auth=name
+			rospy.loginfo("Checking %s",name)
+			#authorized=any(ele in name for ele in self.authorized_names)
+			if name in self.authorized_names:
+				authorized=True 
+			else:
+				authorized=False 
+			if authorized:
+				if self.security_stop_auth:
+					rospy.loginfo("Recovering from auth security stop")
+					self.security_stop_auth=False
+					self.security_stop_recovery() 
+			else:
+				if not self.security_stop_auth:
+					self.security_stop_auth=True
+					rospy.loginfo("User not authorized. Entering in security stop")
+					self.security_stop_enable() 
+	def cb_user_auth(self,data):
+		self.user_auth(data.data)
+	def cb_user_add_name(self,data):
+		rospy.loginfo("Adding user to authorized list.")
+		self.authorized_names.append(data.data)
+		self.last_auth=""
+	def cb_user_remove_name(self,data):
+		rospy.loginfo("Removing user from authorized list.")
+		self.authorized_names.remove(data.data)
+		self.last_auth=""
+	def cb_new_sequence(self,data):
+		parameters=data.data.split()
+		print (parameters)
+		n_times=1
+		if len(parameters)>1:
+			n_times=int(parameters[1])
+		for i in range(n_times):
+			rospy.loginfo("loop %d",i)
+			self.filePoses = open(self.pathFilePoses+parameters[0]+".txt", "r")
+			index=1
+			start_time = time.time()
+			for linea in self.filePoses: #.readline():
+				msg=String()
+				msg.data=linea
+				if self.security_stop:
+					while self.security_stop:
+						pass
+				self.cb_new_move(msg)
+				index=index+1
+				rospy.loginfo("sequence %d duration %s seconds --- delta time %f",index,(time.time() - start_time),self.delta_time)
+				
+	def cb_new_trajectory(self,data):
+		rospy.loginfo("cb_new_trajectory - I heard %s",data)
+		self.filePoses = open(self.pathFilePoses+data.data+".txt", "r")
+		finalPoses=[]
+		index=1
+
+		for linea in self.filePoses: #.readline():
+			#print(linea)
+			poseFinal=[]
+			for pose in linea.split():
+				poseFinal.append(float(pose))
+			p1 = JointTrajectoryPoint()
+			p1.positions = poseFinal
+			p1.velocities = [0]*4
+			p1.accelerations = [0]*4
+			p1.time_from_start = rospy.Time(index*self.delta_time)
+			index=index+1
+			finalPoses.append(p1)
+		#print(finalPoses)
+		global joints_pos
+		#Q1 = [0.5,-0.7,0.5,1.8,1.8,0.5]
+		g = FollowJointTrajectoryGoal()
+		g.trajectory = JointTrajectory()
+		g.trajectory.joint_names = self.JOINT_NAMES
+		try:
+		    joint_states = rospy.wait_for_message("joint_states", JointState)
+		    joints_pos = joint_states.position
+		    g.trajectory.points = finalPoses
+		        #JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
+		        #JointTrajectoryPoint(positions=finalPoses, velocities=[0]*4, time_from_start=rospy.Duration(2.0))]
+		    self.client.send_goal(g)
+		    self.client.wait_for_result()
+		    #self.move_end.publish("0")
+		    self.move_end.publish(str(self.pose_index))
+		    self.pose_index=self.pose_index+1
+		except KeyboardInterrupt:
+		    client.cancel_goal()
+		    raise
+		except:
+		    raise
+		
+	def cb_new_image(self,data):
+		resp1 = self.setRegister.publish(str(self.registroEstado)+" 0")
+		self.read_capture_state=True
+	def cb_set_delta(self,data):
+		rospy.loginfo("cb_set_delta - I heard %f", data.data)
+		self.delta_time=data.data
+
+def main():
+	'''Initializes and cleanup ros node'''
+	rospy.init_node('send_calib_pose', anonymous=True)
+	rate = rospy.Rate(1)
+	cc = SetPose("")
+	rospy.spin()
+		
+
+if __name__ == '__main__':
+	main()
+
