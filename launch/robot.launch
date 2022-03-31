@@ -48,7 +48,7 @@
         </node>-->
 
     <!-- metemos el robot en Rviz, iniciamos Rviz-->
-     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find lego_inventor)/rviz.rviz"/>
+     <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find lego_inventor)/rviz/rviz.rviz"/>
        
 
 </launch>
