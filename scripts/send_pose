@@ -23,6 +23,9 @@ from std_msgs.msg import Header
 from trajectory_msgs.msg import JointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
 
 class SetPose:
 	def __init__(self,namespace):
@@ -42,7 +45,8 @@ class SetPose:
 		print ("Waiting for server...")
 		self.client.wait_for_server()
 		print ("Connected to server")
-		self.pathFilePoses=rospy.get_param('~pathFilePoses',"/home/miguel/tesis/openCVspatialAI/lego_ws/src/lego_inventor/config/")
+		self.pathFilePoses=rospy.get_param('~pathFilePoses',str(SCRIPT_DIR)+"/../config/")
+		print(self.pathFilePoses)
 		self.read_capture_state=False
 		self.secuencia=""
 		self.namespace=namespace
