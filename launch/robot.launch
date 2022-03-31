@@ -22,8 +22,8 @@
    <!-- launch our hardware interface -->
 
     <node pkg="lego_inventor"
-          type="rrbot_control"
-          name="rrbot_control" output="screen" clear_params="true"
+          type="lego_inventor"
+          name="lego_inventor" output="screen" clear_params="true"
           required="true"/>
 
 
@@ -47,8 +47,8 @@
             
         </node>-->
 
-    <!-- metemos el robot en Rviz, iniciamos Rviz   -->
+    <!-- metemos el robot en Rviz, iniciamos Rviz
      <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find lego_inventor)/rviz.rviz"/>
-    
+       -->
 
 </launch>

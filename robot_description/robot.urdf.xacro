@@ -17,8 +17,8 @@
   <link name="base_link">
     <visual>
       <geometry>
-        <!--<box size="0.1 0.15 0.03"/>-->
-         <mesh filename="package://lego_inventor/robot_description/meshes/pinza_blender.dae" scale="0.001 0.001 0.001"/>
+        <box size="0.1 0.15 0.03"/>
+        <!-- <mesh filename="package://lego_inventor/robot_description/meshes/pinza_blender.dae" scale="0.001 0.001 0.001"/>-->
 
       </geometry>
       <origin xyz="0 0 0.015" rpy="1.57 0 0"/>
@@ -35,7 +35,7 @@
   <joint name="world_to_base_link" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0.0" rpy="0 0 0"/>
+    <origin xyz="0 0 0.0" rpy="0 0 3.14"/>
   </joint>
 
 <xacro:macro name="link" params="index parent material link_size:='${[0,0,0]}' link_translation:='0 0 0' joint_translation:='${[0.0,0.0,0.0]}' link_orientation:='0 0 0' joint_orientation:='0 0 0' axis:='0 0 1'">
