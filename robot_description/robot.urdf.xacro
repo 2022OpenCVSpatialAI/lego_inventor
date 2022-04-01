@@ -17,28 +17,28 @@
   <link name="base_link">
     <visual>
       <geometry>
-        <box size="0.1 0.15 0.03"/>
-        <!-- <mesh filename="package://lego_inventor/robot_description/meshes/pinza_blender.dae" scale="0.001 0.001 0.001"/>-->
+        <!--<box size="0.1 0.15 0.03"/>-->
+        <mesh filename="package://lego_inventor/robot_description/meshes/base_lego.dae" scale="0.00039 0.00039 0.00039"/>
 
       </geometry>
-      <origin xyz="0 0 0.015" rpy="1.57 0 0"/>
+      <origin xyz="0 0 0.0" rpy="0 0 ${pi/2}"/>
       <!--<material name="green"/>-->
     </visual>
-    <collision>
+<!--    <collision>
       <geometry>
         <box size="0.1 0.15 0.03"/>
       </geometry>
       <origin xyz="0 0 0.015" rpy="0 0 0"/>
-    </collision>
+    </collision>-->
   </link>
 
   <joint name="world_to_base_link" type="fixed">
     <parent link="world"/>
     <child link="base_link"/>
-    <origin xyz="0 0 0.0" rpy="0 0 3.14"/>
+    <origin xyz="0 0 0.0" rpy="0 0 ${pi}"/>
   </joint>
 
-<xacro:macro name="link" params="index parent material link_size:='${[0,0,0]}' link_translation:='0 0 0' joint_translation:='${[0.0,0.0,0.0]}' link_orientation:='0 0 0' joint_orientation:='0 0 0' axis:='0 0 1'">
+<xacro:macro name="link" params="index parent material link_size:='${[0,0,0]}' link_translation:='0 0 0' joint_translation:='${[0.0,0.0,0.0]}' link_orientation:='0 0 0' joint_orientation:='0 0 0' axis:='0 0 1' mesh=''">
     
     <!--<xacro:if value="${trans_z == 10000}">
       <xacro:property name="trans_z" value="${len/2}"/>
@@ -47,17 +47,22 @@
     <link name="link_${index}">
         <visual>
             <geometry>
+              <xacro:if value="${mesh == ''}">
                 <box size="${link_size[0]} ${link_size[1]} ${link_size[2]}"/>
+              </xacro:if>
+              <xacro:if value="${mesh != ''}">
+                <mesh filename="package://lego_inventor/robot_description/meshes/${mesh}.dae" scale="0.00039 0.00039 0.00039"/>
+              </xacro:if>
             </geometry>
             <origin xyz="${link_translation}" rpy="${link_orientation}"/>
             <material name="${material}"/>
         </visual>
-        <collision>
+        <!--<collision>
             <geometry>
                 <box size="${link_size[0]} ${link_size[1]} ${link_size[2]}"/>
             </geometry>
             <origin xyz="${link_translation}" rpy="${link_orientation}"/>
-        </collision>
+        </collision>-->
         <!--<xacro:default_inertial mass="10"/>-->
     </link>
 
@@ -70,10 +75,10 @@
       <origin xyz="${joint_translation[0]} ${joint_translation[1]} ${joint_translation[2]}" rpy="${joint_orientation}"/>
     </joint>
 </xacro:macro>
-<xacro:link index="1" parent="base_link" material="green" link_size="${[0.07,0.1,0.16]}" joint_translation='${[0,0,0.03]}' link_translation='0 0 0.08'/>
-<xacro:link index="2" parent="link_1" material="grey" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0,0,0.16]}'  joint_orientation="-${pi/2} 0 0" link_translation='0.08 0 0.0'/>
-<xacro:link index="3" parent="link_2" material="blue" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0.16,0,0]}'  joint_orientation="0 0 0" link_translation='0.08 0 0.0'/>
-<xacro:link index="4" parent="link_3" material="green" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0.16,0,0]}'  joint_orientation="0 0 0" link_translation='0.08 0 0.0' />
+<xacro:link index="1" parent="base_link" material="green" link_size="${[0.07,0.1,0.16]}" joint_translation='${[0,0,0.03]}' link_translation='0 0 0.0254' mesh='link_1' link_orientation='0 0 ${pi/2}'/>
+<xacro:link index="2" parent="link_1" material="grey" link_size="${[0.16,0.07,0.1]}" joint_translation='${[-0.008,0,0.16]}'  joint_orientation="-${pi/2} 0 0" link_translation='0.0 0 0.0' mesh='link_2' link_orientation='${pi/2} -${pi/2} 0'/>
+<xacro:link index="3" parent="link_2" material="blue" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0.11-0.009,0,0]}'  joint_orientation="0 0 0" link_translation='0.13779 0.094488 0.0'  mesh='pinza_blender' link_orientation='0 -${pi/2} 0'/>
+<xacro:link index="4" parent="link_3" material="green" link_size="${[0.01,0.01,0.01]}" joint_translation='${[0.16,0,0]}'  joint_orientation="0 0 0" link_translation='0.08 0 0.0' />
 <!--<xacro:link index="2" parent="link_1" len="0.105" trans_z="0.16"/>
 <xacro:link index="3" parent="link_2" len="1" joint_z="0.5" trans_z="0.5" rotation_r="1"/>
 <xacro:link index="4" parent="link_3" len="1"  />-->

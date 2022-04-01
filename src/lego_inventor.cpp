@@ -18,7 +18,7 @@ int s, status=0;
 struct sockaddr_rc addr = { 0 };
 char dest[18] = "A8:E2:C1:99:28:71";
 std::stringstream input_stream;
-std::set<std::string> sounds={"1234","exterminate","kick","seek and destroy","activate","fire","laser","shake","affirmative","goal","laugh","shooting","bowling","goodbye","like","shut down","brick eating","grab","mission accomplished","slam dunk","celebrate","hammer","no","strike","chuckle","hello","ouch","success chime","countdown","hi","ping","tadaa","countdown tick","hi 5","play","target acquired","damage","hit","punch","target destroyed","deactivate","horn","reverse","whirl","delivery","humming","revving","wow","dizzy","hydraulics down","sad","yes","error","hydraulics up","scanning","yipee","explosion","initialize","scared","yuck"};
+std::set<std::string> sounds={"1234","exterminate","kick","activate","fire","laser","shake","affirmative","goal","laugh","shooting","bowling","goodbye","like","shut down","grab","celebrate","hammer","no","strike","chuckle","hello","ouch","success chime","countdown","hi","ping","tadaa","play","damage","hit","punch","deactivate","horn","reverse","whirl","delivery","humming","revving","wow","dizzy","sad","yes","error","scanning","yipee","explosion","initialize","scared","yuck"};
 std::set<std::string> images={"angry","arrow_e","arrow_n","arrow_ne","arrow_nw","arrow_s","arrow_se","arrow_sw","arrow_w","asleep","butterfly","chessboard","clock1","clock2","clock3","clock4","clock5","clock6","clock7","clock8","clock","clock1","clock11","clock12","confused","cow","diamond","diamond_small","duck","fabulous","ghost","giraffe","go_down","go_left","go_right","go_up","happy","heart","heart_small","house","meh","music_crotchet","music_quaver","music_quavers","no","pacman","pitchfork","rabbit","rollerskate","sad","silly","skull","smile","snake","square","square_small","stickfigure","surprised","sword","target","tortoise","triangle","triangle_left","tshirt","umbrella","xmas","yes"};
 std::string str_tolower(std::string );
 std::string blue_get_line();
@@ -42,7 +42,9 @@ void legoSoundCallback(const std_msgs::String::ConstPtr& msg)
   if(sounds.find(str_tolower(msg->data)) != sounds.end())
   {
     char command[100];
-    std::string command_string="sound,"+msg->data;
+    std::string sound=str_tolower(msg->data);
+    sound[0]=toupper(sound[0]);
+    std::string command_string="sound,"+sound;//msg->data;
     strcpy(command,command_string.c_str());
     ROS_INFO("LegoSound. I heard: [%s]", msg->data.c_str()); 
     blue_send(command);  

@@ -186,10 +186,43 @@ class SetPose:
 			n_times=int(parameters[1])
 		for i in range(n_times):
 			rospy.loginfo("loop %d",i)
-			self.filePoses = open(self.pathFilePoses+parameters[0]+".txt", "r")
+			
+			command=str(parameters[0])
+			file_to_open=""
+			joint_1_v="0"
+			joint_1_replace=False
+			reverseOrder=False
+			if "center" in command:
+				joint_1_v="0"
+				joint_1_replace=False
+			elif "left" in command:
+				joint_1_v="1.57"
+				joint_1_replace=True
+			elif "right" in command:
+				joint_1_v="-1.57"
+				joint_1_replace=True
+			if command.startswith("take"):  
+				file_to_open="takeFromCentral"	
+			elif command.startswith("leave"):
+				print("reversed")
+				file_to_open="takeFromCentral"
+				reverseOrder=True
+			else:
+				file_to_open=parameters[0]
+			self.filePoses = open(self.pathFilePoses+file_to_open+".txt", "r")
+			if reverseOrder:
+				lines=[line for line in reversed(list(self.filePoses))]	 
+			else:
+				lines=[line for line in self.filePoses]
+			if joint_1_replace:
+				lines=[line.replace('0.0', joint_1_v, 1) for line in lines]	
+			print(lines)
+			#:
+			#	print(line.rstrip())
+			
 			index=1
 			start_time = time.time()
-			for linea in self.filePoses: #.readline():
+			for linea in lines: #self.filePoses: #.readline():
 				msg=String()
 				msg.data=linea
 				if self.security_stop:
@@ -198,7 +231,7 @@ class SetPose:
 				self.cb_new_move(msg)
 				index=index+1
 				rospy.loginfo("sequence %d duration %s seconds --- delta time %f",index,(time.time() - start_time),self.delta_time)
-				
+			
 	def cb_new_trajectory(self,data):
 		rospy.loginfo("cb_new_trajectory - I heard %s",data)
 		self.filePoses = open(self.pathFilePoses+data.data+".txt", "r")
