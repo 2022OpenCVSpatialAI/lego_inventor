@@ -7,7 +7,7 @@
     <color rgba="0.0 0.1 0.28515625 1.0"/>
   </material>
   <material name="green">
-    <color rgba="0.0 0.8 0.0 1.0"/>
+    <color rgba="0.0 0.8 0.0 0"/>
   </material>
   <material name="grey">
     <color rgba="0.2 0.2 0.2 1.0"/>
@@ -18,7 +18,7 @@
     <visual>
       <geometry>
         <!--<box size="0.1 0.15 0.03"/>-->
-        <mesh filename="package://lego_inventor/robot_description/meshes/base_lego.dae" scale="0.00039 0.00039 0.00039"/>
+        <mesh filename="package://lego_inventor/robot_description/meshes/base_lego2.dae" scale="0.00039 0.00039 0.00039"/>
 
       </geometry>
       <origin xyz="0 0 0.0" rpy="0 0 ${pi/2}"/>
@@ -55,7 +55,7 @@
               </xacro:if>
             </geometry>
             <origin xyz="${link_translation}" rpy="${link_orientation}"/>
-            <material name="${material}"/>
+            <!--<material name="${material}"/>-->
         </visual>
         <!--<collision>
             <geometry>
@@ -78,7 +78,7 @@
 <xacro:link index="1" parent="base_link" material="green" link_size="${[0.07,0.1,0.16]}" joint_translation='${[0,0,0.03]}' link_translation='0 0 0.0254' mesh='link_1' link_orientation='0 0 ${pi/2}'/>
 <xacro:link index="2" parent="link_1" material="grey" link_size="${[0.16,0.07,0.1]}" joint_translation='${[-0.008,0,0.16]}'  joint_orientation="-${pi/2} 0 0" link_translation='0.0 0 0.0' mesh='link_2' link_orientation='${pi/2} -${pi/2} 0'/>
 <xacro:link index="3" parent="link_2" material="blue" link_size="${[0.16,0.07,0.1]}" joint_translation='${[0.11-0.009,0,0]}'  joint_orientation="0 0 0" link_translation='0.13779 0.094488 0.0'  mesh='pinza_blender' link_orientation='0 -${pi/2} 0'/>
-<xacro:link index="4" parent="link_3" material="green" link_size="${[0.01,0.01,0.01]}" joint_translation='${[0.16,0,0]}'  joint_orientation="0 0 0" link_translation='0.08 0 0.0' />
+<xacro:link index="4" parent="link_3" material="green" link_size="${[0.001,0.001,0.001]}" joint_translation='${[0.0,0,0]}'  joint_orientation="0 0 0" link_translation='0.0 0 0.0' />
 <!--<xacro:link index="2" parent="link_1" len="0.105" trans_z="0.16"/>
 <xacro:link index="3" parent="link_2" len="1" joint_z="0.5" trans_z="0.5" rotation_r="1"/>
 <xacro:link index="4" parent="link_3" len="1"  />-->
