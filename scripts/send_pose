@@ -30,18 +30,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 class SetPose:
 	def __init__(self,namespace):
 		self.JOINT_NAMES = ['joint_1', 'joint_2','joint_3','joint_4' ]
-		self.authorized_names=['Javier']
+		self.authorized_names=['Javier','UNKNOWN']
 		self.last_auth=""
 		self.gripper=0
 		self.client = actionlib.SimpleActionClient('/legoinventor_position_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
 		self.pose_index=0
-		self.min_security_user_distance=0.5 # meters
+		self.min_security_user_distance=0.6 # meters
 		self.security_stop=False
 		self.security_stop_distance=False
 		self.security_stop_auth=False
 		self.current_image="happy"
 		self.current_sound="initialize"
-		self.delta_time=2
+		self.delta_time=0.7
 		print ("Waiting for server...")
 		self.client.wait_for_server()
 		print ("Connected to server")
@@ -120,7 +120,7 @@ class SetPose:
 			self.security_stop=False
 			self.send_image(self.current_image)
 			self.send_sound("Yipee")
-			self.delta_time=1.0
+			self.delta_time=4.0
 
 			
 	def send_image(self,image):
@@ -139,7 +139,7 @@ class SetPose:
 				self.security_stop_distance=False
 				self.security_stop_recovery()
 			if distance>2*self.min_security_user_distance:
-				self.delta_time=1
+				self.delta_time=0.7
 			elif distance>self.min_security_user_distance:
 				self.delta_time=1/pow(distance,2)
 		else:
