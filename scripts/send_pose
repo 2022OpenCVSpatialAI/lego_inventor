@@ -42,6 +42,7 @@ class SetPose:
 		self.current_image="happy"
 		self.current_sound="initialize"
 		self.delta_time=0.7
+		self.last_command_time=rospy.get_rostime()
 		print ("Waiting for server...")
 		self.client.wait_for_server()
 		print ("Connected to server")
@@ -116,6 +117,9 @@ class SetPose:
 		q2=(0.5-data.data[1])*2
 		nuevo_mensaje.data=str(q1)+" "+str(-q2)+ " 0 "+str(self.gripper)
 		rospy.loginfo(nuevo_mensaje)
+		command_time=rospy.get_rostime()-self.last_command_time
+		rospy.loginfo("last command %f ",command_time.nsecs)
+		#if (command_time.nsecs)
 		self.cb_new_move(nuevo_mensaje)
 		#self.simple_move.publish(nuevo_mensaje)
 	def cb_security_stop(self,data):
