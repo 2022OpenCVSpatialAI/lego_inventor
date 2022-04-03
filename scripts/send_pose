@@ -85,15 +85,19 @@ class SetPose:
 		global joints_pos
 		g = FollowJointTrajectoryGoal()
 		g.trajectory = JointTrajectory()
+		
 		g.trajectory.joint_names = self.JOINT_NAMES
 		try:
-		    joint_states = rospy.wait_for_message("joint_states", JointState)
-		    joints_pos = joint_states.position
+		    #joint_states = rospy.wait_for_message("joint_states", JointState)
+		    #joints_pos = joint_states.position
 		    g.trajectory.points = [
 		        #JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
-		        JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(self.delta_time))]
+		        # ~ JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(self.delta_time))]
+		        JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(0,100000000))]
+		    g.trajectory.header.stamp = rospy.Time.now()
 		    self.client.send_goal(g)
-		    self.client.wait_for_result(rospy.Duration(self.delta_time+1))
+#		    self.client.wait_for_result(rospy.Duration(self.delta_time+1))
+		    self.client.wait_for_result(rospy.Duration(0,100000000))
 		    self.move_end.publish(str(self.pose_index))
 		    self.pose_index=self.pose_index+1
 		except KeyboardInterrupt:
@@ -119,7 +123,9 @@ class SetPose:
 		rospy.loginfo(nuevo_mensaje)
 		command_time=rospy.get_rostime()-self.last_command_time
 		rospy.loginfo("last command %f ",command_time.nsecs)
-		#if (command_time.nsecs)
+		# ~ if command_time.nsecs>500000000:
+			# ~ self.last_command_time=rospy.get_rostime()
+			# ~ self.cb_new_move(nuevo_mensaje)
 		self.cb_new_move(nuevo_mensaje)
 		#self.simple_move.publish(nuevo_mensaje)
 	def cb_security_stop(self,data):
@@ -144,7 +150,7 @@ class SetPose:
 			self.security_stop=False
 			self.send_image(self.current_image)
 			self.send_sound("Yipee")
-			self.delta_time=4.0
+			#self.delta_time=4.0
 
 			
 	def send_image(self,image):
