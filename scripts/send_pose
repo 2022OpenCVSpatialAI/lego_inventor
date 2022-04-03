@@ -58,7 +58,7 @@ class SetPose:
 		rospy.Subscriber("/oak/user/face/name", String, self.cb_user_auth)
 		rospy.Subscriber("/oak/user/authorize_name", String, self.cb_user_add_name)
 		rospy.Subscriber("/oak/user/remove_name", String, self.cb_user_remove_name)
-		rospy.Subscriber("/oak/user/hands/hand_screen_pos", Float32MultiArray, self.cb_hand_screen_pos, queue_size=1)
+		#rospy.Subscriber("/oak/user/hands/hand_screen_pos", Float32MultiArray, self.cb_hand_screen_pos, queue_size=1)
 		rospy.Subscriber("/oak/user/hands/gesture", String, self.cb_hand_gesture, queue_size=1)
 		self.move_end= rospy.Publisher('/move_end', String, queue_size=1)
 		self.lego_sound= rospy.Publisher('/lego/sound', String, queue_size=1)
@@ -251,7 +251,9 @@ class SetPose:
 			print(lines)
 			#:
 			#	print(line.rstrip())
-			
+			## for programming
+			#if command.startswith("take"):  
+
 			index=1
 			start_time = time.time()
 			for linea in lines: #self.filePoses: #.readline():
