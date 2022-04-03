@@ -105,6 +105,7 @@ class SetPose:
 		    raise
 		except:
 		    raise
+	'''
 	def cb_hand_gesture(self,data):
 		#rospy.loginfo("cb_hand_gesture - I heard %s", data)
 		if data.data=='FIVE':
@@ -127,6 +128,7 @@ class SetPose:
 			# ~ self.last_command_time=rospy.get_rostime()
 			# ~ self.cb_new_move(nuevo_mensaje)
 		self.cb_new_move(nuevo_mensaje)
+		''' 
 		#self.simple_move.publish(nuevo_mensaje)
 	def cb_security_stop(self,data):
 		rospy.loginfo("security stopping %s",data.data)
