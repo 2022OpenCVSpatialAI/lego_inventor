@@ -57,6 +57,8 @@ class SetPose:
 		rospy.Subscriber("/oak/user/face/name", String, self.cb_user_auth)
 		rospy.Subscriber("/oak/user/authorize_name", String, self.cb_user_add_name)
 		rospy.Subscriber("/oak/user/remove_name", String, self.cb_user_remove_name)
+		rospy.Subscriber("/oak/user/hands/hand_screen_pos", Float32MultiArray, self.cb_hand_screen_pos, queue_size=1)
+		rospy.Subscriber("/oak/user/hands/gesture", String, self.cb_hand_gesture, queue_size=1)
 		self.move_end= rospy.Publisher('/move_end', String, queue_size=1)
 		self.lego_sound= rospy.Publisher('/lego/sound', String, queue_size=1)
 		self.lego_image= rospy.Publisher('/lego/image', String, queue_size=1)
@@ -98,6 +100,24 @@ class SetPose:
 		    raise
 		except:
 		    raise
+	def cb_hand_gesture(self,data):
+		#rospy.loginfo("cb_hand_gesture - I heard %s", data)
+		if data.data=='FIVE':
+			self.gripper=0
+		elif data.data=='FIST':
+			self.gripper=3.14
+	def cb_hand_screen_pos(self,data):
+		#rospy.loginfo("cb_hand_screen_pose - I heard %f", data.data[0])
+		#rospy.loginfo("hand_screen_pose size - I heard %d", len(data.data))
+		#for numero in data.data:
+		#	rospy.loginfo("%f", numero)
+		nuevo_mensaje=String()
+		q1=(0.5-data.data[0])*5.5 #3.14
+		q2=(0.5-data.data[1])*2
+		nuevo_mensaje.data=str(q1)+" "+str(-q2)+ " 0 "+str(self.gripper)
+		rospy.loginfo(nuevo_mensaje)
+		self.cb_new_move(nuevo_mensaje)
+		#self.simple_move.publish(nuevo_mensaje)
 	def cb_security_stop(self,data):
 		rospy.loginfo("security stopping %s",data.data)
 		self.security_stop_enable()
@@ -106,7 +126,7 @@ class SetPose:
 		self.security_stop=True
 		self.send_image("no")
 		self.send_sound("No")
-		self.delta_time=0.0	
+		#self.delta_time=0.0	
 	def cb_security_stop_recovery(self,data):
 		rospy.loginfo("recovering from security stop %s",data.data)
 		self.security_stop_recovery()
