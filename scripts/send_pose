@@ -92,12 +92,12 @@ class SetPose:
 		    #joints_pos = joint_states.position
 		    g.trajectory.points = [
 		        #JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
-		        # ~ JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(self.delta_time))]
-		        JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(0,100000000))]
+		        JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(self.delta_time))]
+		        #JointTrajectoryPoint(positions=poseFinal, velocities=[0]*4, time_from_start=rospy.Duration(0,100000000))]
 		    g.trajectory.header.stamp = rospy.Time.now()
 		    self.client.send_goal(g)
-#		    self.client.wait_for_result(rospy.Duration(self.delta_time+1))
-		    self.client.wait_for_result(rospy.Duration(0,100000000))
+		    self.client.wait_for_result(rospy.Duration(self.delta_time))
+		    #self.client.wait_for_result(rospy.Duration(0,100000000))
 		    self.move_end.publish(str(self.pose_index))
 		    self.pose_index=self.pose_index+1
 		except KeyboardInterrupt:
